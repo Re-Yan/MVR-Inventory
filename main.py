@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QLineEdit, QLabel, QPushButton
 from datetime import datetime
-import sys
+import sys, sqlite3
 
 
 class search(QWidget):
@@ -57,15 +57,33 @@ class MainWindow(QMainWindow):
     def searchItem(self):
         inputText = self.itemSearch.getText()
         print(f"searched for item: {inputText}")
-        self.itemSearch.clearInput()
+        self.itemSearch.clear()
     
     def logSales(self):
         inputText = self.salesLog.getText()
         dateNow = datetime.today().date().isoformat()
-        print(f"Recoded item: {inputText} on {dateNow}")
-        self.salesLog.clearInput()
+        
+        if not inputText:
+            print("Sales Log Empty. Nothing to write")
+            return
+        
+        try:
+            conn = sqlite3.connect("salesDatabase.db")
+            cursor = conn.cursor()
 
+            sql_insert = "INSERT INTO sales (sale_date, part_name) VALUES (?, ?)"
 
+            cursor.execute(sql_insert, (dateNow, inputText))
+
+            conn.commit()
+            print(f"Added item: {inputText} on {dateNow} in Database")
+            self.salesLog.clearInput()
+        
+        except sqlite3.Error as e:
+            print(f"Error connecting to Database: {e}")
+        finally:
+            if conn:
+                conn.close()
 
 
 
