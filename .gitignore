@@ -1,0 +1,35 @@
+# ---------------------------------
+# --- Python & PySide Specific ---
+# ---------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+# (Change 'venv' if you named yours differently)
+venv/
+.venv/
+inventory_system/
+# ---------------------------------
+# --- Database (Your Specifics) ---
+# ---------------------------------
+
+# Ignore ALL SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ---------------------------------
+# --- Editor & OS Specific ---
+# ---------------------------------
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
