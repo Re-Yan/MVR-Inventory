@@ -36,23 +36,23 @@ class Button(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
 
-class MainWindow(QMainWindow):
+
+class contentWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("MVR Inventory")
 
-        centralWidget = QWidget()       
-        main_layout = QVBoxLayout()
+        self.setMaximumWidth(450)
+
+        layout = QVBoxLayout()
     
 
         self.itemSearch = search(label="Item Search: ", buttonLabel="Search", onButtonClick=self.searchItem)
         self.salesLog = search(label="Sales Log: ", buttonLabel="Enter", onButtonClick=self.logSales)
 
-        main_layout.addWidget(self.itemSearch)
-        main_layout.addWidget(self.salesLog)
+        layout.addWidget(self.itemSearch)
+        layout.addWidget(self.salesLog)
 
-        centralWidget.setLayout(main_layout)
-        self.setCentralWidget(centralWidget)
+        self.setLayout(layout)
 
     def searchItem(self):
         inputText = self.itemSearch.getText()
@@ -85,7 +85,20 @@ class MainWindow(QMainWindow):
             if conn:
                 conn.close()
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
+        self.setWindowTitle("MVR Inventory")   
+
+        main_layout = QHBoxLayout()
+        main_layout.addStretch()
+        main_layout.addWidget(contentWidget())
+        main_layout.addStretch()
+
+        main_widget = QWidget()
+        main_widget.setLayout(main_layout)
+        self.setCentralWidget(main_widget)
 
 app = QApplication(sys.argv)
 window = MainWindow()
