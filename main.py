@@ -1,4 +1,5 @@
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QLineEdit, QLabel, QPushButton
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QLineEdit, QLabel, QPushButton, QTableView
+from PySide6.QtSql import QSqlDatabase, QSqlTableModel
 from datetime import datetime
 import sys, sqlite3
 
@@ -11,7 +12,6 @@ class search(QWidget):
         self.label = QLabel(label)
 
         self.resize(400, 250)
-        self.setWindowTitle("MVR Inventory System")
         self.setContentsMargins(20, 20, 20, 20)
 
         self.input = QLineEdit(self)
@@ -35,6 +35,18 @@ class search(QWidget):
 class Button(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
+
+class tableView(QTableView):
+    def __init__(self, model: QSqlTableModel, parent=None):
+        super().__init__()
+
+        self.setModel(model)
+
+        self.isSortingEnabled(True)
+        print("Custom TableVIew and Model created")
+        
+
+
 
 
 class contentWidget(QWidget):
@@ -91,14 +103,37 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("MVR Inventory")   
 
+        # Creating Database Connection
+        db = QSqlDatabase.addDatabase("QSQLITE")
+        db.setDatabaseName("salesDatabase.db")
+
+        # ERROR Handling of DB Connection
+        if not db.open():
+            print("Unable to open database connection")
+            sys.exit(1)
+        print("DB Connection Successful")
+
+        # Create Model Instance
+        self.model = QSqlTableModel(db=db)
+        self.model.setTable("sales")
+        self.model.select()
+
+        # Creating the actual QtableView Widget
+        self.view = tableView(model=self.model)
+
+        # Layout Arrangement
         main_layout = QHBoxLayout()
         main_layout.addStretch()
         main_layout.addWidget(contentWidget())
         main_layout.addStretch()
+        main_layout.addWidget(self.view)
 
         main_widget = QWidget()
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
+
+        
+
 
 app = QApplication(sys.argv)
 window = MainWindow()
