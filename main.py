@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QLineEdit, QLabel, QPushButton, QTableView
-from PySide6.QtSql import QSqlDatabase, QSqlTableModel
+from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRecord
 from datetime import datetime
 import sys, sqlite3
 
@@ -50,14 +50,14 @@ class tableView(QTableView):
 
 
 class contentWidget(QWidget):
-    def __init__(self):
+    def __init__(self, model: QSqlTableModel, parent=None):
         super().__init__()
 
         self.setMaximumWidth(450)
 
         layout = QVBoxLayout()
     
-
+        self.model = model
         self.itemSearch = search(label="Item Search: ", buttonLabel="Search", onButtonClick=self.searchItem)
         self.salesLog = search(label="Sales Log: ", buttonLabel="Enter", onButtonClick=self.logSales)
 
@@ -79,24 +79,20 @@ class contentWidget(QWidget):
             print("Sales Log Empty. Nothing to write")
             return
         
-        try:
-            conn = sqlite3.connect("salesDatabase.db")
-            cursor = conn.cursor()
+        record = self.model.record()
+        record.setValue("sale_date", dateNow)
+        record.setValue("part_name", inputText)
 
-            sql_insert = "INSERT INTO sales (sale_date, part_name) VALUES (?, ?)"
-
-            cursor.execute(sql_insert, (dateNow, inputText))
-
-            conn.commit()
-            print(f"Added item: {inputText} on {dateNow} in Database")
-            self.salesLog.clearInput()
+        if self.model.insertRecord(-1, record):
+            if self.model.submitAll():
+                print(f"Recorded Item {inputText} - {dateNow}")
+                self.model.select() # Refresh the Model
+                self.salesLog.clearInput()
+            else:
+                print("Failed to submit changes to DB")
+        else:
+            print("Failed to insert record into model")
         
-        except sqlite3.Error as e:
-            print(f"Error connecting to Database: {e}")
-        finally:
-            if conn:
-                conn.close()
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -119,12 +115,13 @@ class MainWindow(QMainWindow):
         self.model.select()
 
         # Creating the actual QtableView Widget
+        self.mainWidget = contentWidget(model=self.model)
         self.view = tableView(model=self.model)
 
         # Layout Arrangement
         main_layout = QHBoxLayout()
         main_layout.addStretch()
-        main_layout.addWidget(contentWidget())
+        main_layout.addWidget(self.mainWidget)
         main_layout.addStretch()
         main_layout.addWidget(self.view)
 
