@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QHBoxLayout, QVBoxLayout, QLineEdit, QLabel, QPushButton, QTableView
 from PySide6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRecord
 from datetime import datetime
@@ -42,7 +43,7 @@ class tableView(QTableView):
 
         self.setModel(model)
 
-        self.isSortingEnabled(True)
+        self.isSortingEnabled()
         print("Custom TableVIew and Model created")
         
 
@@ -112,6 +113,11 @@ class MainWindow(QMainWindow):
         # Create Model Instance
         self.model = QSqlTableModel(db=db)
         self.model.setTable("sales")
+
+        #Descending Order to show latest changes on top
+        sale_id_index = self.model.fieldIndex("sale_id")
+        self.model.setSort(sale_id_index, Qt.DescendingOrder)
+
         self.model.select()
 
         # Creating the actual QtableView Widget
